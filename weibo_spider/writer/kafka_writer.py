@@ -4,7 +4,7 @@ import logging
 from kafka import KafkaProducer
 
 from .writer import Writer
-logger = logging.getLogger('spider.mysql_writer')
+logger = logging.getLogger('spider.kafka_writer')
 
 
 class KafkaWriter(Writer):
@@ -15,14 +15,16 @@ class KafkaWriter(Writer):
                                  value_serializer=lambda m: json.dumps(m,ensure_ascii=False).encode('UTF-8'))
         self.weibo_topics = list(kafka_config['weibo_topics'])
         self.user_topics = list(kafka_config['user_topics'])
-        logger.info('{}', kafka_config)
+        logger.info(kafka_config)
 
     def write_weibo(self, weibo):
         for w in weibo:
+            w.user_id = self.user.id
             for topic in self.weibo_topics:
                 self.producer.send(topic, value=w.__dict__)
 
     def write_user(self, user):
+        self.user = user
         for topic in self.user_topics:
             self.producer.send(topic, value=user.__dict__)
 
