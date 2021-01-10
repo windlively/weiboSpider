@@ -30,4 +30,3 @@ class KafkaWriter(Writer):
 
     def __del__(self):
         self.producer.close()
-
