@@ -25,7 +25,7 @@ class PageParser(Parser):
         self.since_date = user_config['since_date']
         self.end_date = user_config['end_date']
         self.page = page
-        self.url = 'https://weibo.cn/%s?page=%d' % (self.user_uri, page)
+        self.url = 'https://weibo.cn/%s/profile?page=%d' % (self.user_uri, page)
         if self.end_date != 'now':
             since_date = self.since_date.split(' ')[0].split('-')
             end_date = self.end_date.split(' ')[0].split('-')
@@ -43,6 +43,8 @@ class PageParser(Parser):
         for i in range(3):
             self.selector = handle_html(self.cookie, self.url)
             info = self.selector.xpath("//div[@class='c']")
+            if info is None or len(info) == 0:
+                continue
             is_exist = info[0].xpath("div/span[@class='ctt']")
             if is_exist:
                 PageParser.empty_count = 0

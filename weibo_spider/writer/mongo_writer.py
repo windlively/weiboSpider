@@ -8,8 +8,11 @@ logger = logging.getLogger('spider.mongo_writer')
 
 
 class MongoWriter(Writer):
-    def __init__(self):
-        pass
+    def __init__(self, mongo_config):
+        self.mongo_config = mongo_config
+        self.connection_string = mongo_config['connection_string']
+        self.dba_name = mongo_config.get('dba_name', None)
+        self.dba_password = mongo_config.get('dba_password', None)
 
     def _info_to_mongodb(self, collection, info_list):
         """将爬取的信息写入MongoDB数据库"""
@@ -22,7 +25,13 @@ class MongoWriter(Writer):
         try:
             from pymongo import MongoClient
 
-            client = MongoClient()
+            client = MongoClient(self.connection_string)
+            if self.dba_name or self.dba_password:
+                # authenticate() 在PyMongo3.6版本就已弃用，这一段可能需要后续跟进
+                client.admin.authenticate(
+                    self.dba_name, self.dba_password, mechanism='SCRAM-SHA-1'
+                )
+
             db = client['weibo']
             collection = db[collection]
             new_info_list = copy.deepcopy(info_list)
